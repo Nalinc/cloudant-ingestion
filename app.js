@@ -10,7 +10,7 @@ var config = require('./config');
 var args = process.argv.slice(2);
 
 
-var createdb =function(dbname){
+var createdb =function(dbname, automode){
 	//To do
 	console.log('creating database: '+dbname);
 	var options ={
@@ -24,9 +24,28 @@ var createdb =function(dbname){
 	request(options, function(error, response, body) {
 	  console.log(body);
 	  console.log('Make sure you change the default database to:'+ dbname+' in "config/index.js"');
+	  if(automode){
+	  	createDesignDocument(config.designDocument);
+	  }
 	});	
 }
 
+var deletedb =function(dbname){
+	//To do
+	console.log('deleting database: '+dbname);
+	var options ={
+		'uri': config.cloudantUrl+dbname,
+		'method': 'DELETE',
+		'timeout': 10000,
+		'followRedirect': true,
+		'maxRedirects': 10,
+		'headers': {'Authorization': 'Basic '+config.cloudantKey}
+	}
+	request(options, function(error, response, body) {
+	  console.log(body);
+	  console.log('Make sure you change the default database to:'+ dbname+' in "config/index.js"');
+	});	
+}
 var insertFile =function(filepath){
 	//To do
 	console.log('inserting document: '+filepath);
@@ -56,6 +75,7 @@ var insertFiles =function(filepath){
 	            console.log(err);
 	        } 
 	        files.forEach( function( file, index ) {
+				(function(file){
 	                var obj = readFiles(filepath+file);
 					var options ={
 						'uri': config.cloudantUrl+config.cloudantDB,
@@ -69,19 +89,21 @@ var insertFiles =function(filepath){
 					}
 					request(options, function(error, response, body) {
 					  console.log(file+' '+JSON.stringify(body));
-					});		               	
+					});	
+				})(file)	               	
 	        } );
 	} );
 }
 
 var createDesignDocument= function(docName){
+	console.log('inserting design document: '+config.designDocument);
 	var designDoc= {
 		'_id': '_design/'+docName,
 		'indexes': {
 			'contentSearch':{
 				'analyzer':{
-					'name':config.defaultAnalyzer,
-					'default': config.defaultLanguage
+					'name':config.analyzer,
+					'default': config.language
 				},
 				'index': config.searchIndex
 			}
@@ -89,7 +111,7 @@ var createDesignDocument= function(docName){
 	}
 
 	var options ={
-		'uri': config.cloudantUrl+config.cloudantDB+'_design/'+docName,
+		'uri': config.cloudantUrl+config.cloudantDB+'/_design/'+docName,
 		'method': 'PUT',
 		'timeout': 10000,
 		'json':true,
@@ -116,13 +138,23 @@ var availableCommands = {
 
 function scriptUsage(){
 	console.log('\n\t\t\t--Script Usage--\n');
-	console.log('\t1) Create a database(rarely needed)\n')	
+
+	console.log('\t1) Create database, and insert a design document\n');
+		console.log('\t\t`node app.js setup`\n');	
+	console.log('\t2) Push documents in ./data to Cloudant\n');
+		console.log('\t\t`node app.js load`\n');	
+	console.log('\t3) Reset everything\n');
+		console.log('\t\t`node app.js clean`\n');
+		
+	console.log('------------------OR, Use following commands to---------------------\n');	
+
+	console.log('\t4) Create a database( rarelyneeded)\n')	
 		console.log('\t\t`node app.js createdb <database_name>`\n');
-	console.log('\t2) Insert a single document\n')
+	console.log('\t5) Insert a single document\n')
 		console.log('\t\t`node app.js insertdoc <document_path>`\n');
-	console.log('\t3) Bulk insert multiple documents\n')
+	console.log('\t6) Bulk insert multiple documents\n')
 		console.log('\t\t`node app.js bulkinsert <directory_path>`\n');
-	console.log('\t4) Create a design document\n')
+	console.log('\t7) Create a design document\n')
 		console.log('\t\t`node app.js designdoc <docname>`\n');			
 }
 
@@ -137,6 +169,17 @@ if(args[0] in availableCommands){
 		process.exit(0);
 	}
 }else{
-	scriptUsage();
-	process.exit(0);
+		if(args[0]=='setup'){
+			createdb(config.cloudantDB,true);
+		}
+		else if(args[0]=='load'){
+			insertFiles(config.documentPath);
+		}
+		else if(args[0]=='clean'){
+			deletedb(config.cloudantDB);
+		}
+		else{
+			scriptUsage();
+			process.exit(0);			
+		}
 }

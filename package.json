@@ -1,0 +1,23 @@
+{
+  "name": "cloudant-ingestion",
+  "version": "1.0.0",
+  "description": "ready to use script to interact with Cloudant API for full-text search",
+  "main": "app.js",
+  "dependencies": {
+    "request": "^2.69.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nalinc/cloudant-ingestion.git"
+  },
+  "author": "nalinc <nalin.chhibber@gmail.com> (http://nalinc.github.io)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nalinc/cloudant-ingestion/issues"
+  },
+  "homepage": "https://github.com/Nalinc/cloudant-ingestion#readme"
+}

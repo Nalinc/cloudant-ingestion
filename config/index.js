@@ -1,11 +1,14 @@
 var config= {};
 
 config.cloudantUrl = "https://nalinc.cloudant.com/";
-config.cloudantDB = "test/";
+config.cloudantDB = "test";
 config.cloudantKey = "bmFsaW5jOmI0enoxbmc0";
 
-config.defaultAnalyzer = "standard";
-config.defaultLanguage = "english";
+config.documentPath = "./data/";
+
+config.designDocument = "imgbook";
+config.analyzer = "standard";
+config.language = "english";
 config.searchIndex = "function (doc) {\
   index('content', doc.content['raw'],{'index':true,'store':true});\
   index('product-name', doc.content['title'],{'index':false,'store':true});\
@@ -17,4 +20,4 @@ config.searchIndex = "function (doc) {\
   index('product-id', doc.context['product-id'],{'index':true, 'store':false});\
 }";
 
-module.exports = config;
+module.exports = config; 
